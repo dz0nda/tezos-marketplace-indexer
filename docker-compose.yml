@@ -2,21 +2,17 @@ version: "3.8"
 
 services:
   indexer:
-    image: rarible_indexer:dev
+    # image: rarible_indexer:dev
+    build:
+      context: ./
+      dockerfile: Dockerfile
     depends_on:
       - db
-      - kafka0
     command: [ "-c", "dipdup.yml", "-c", "dipdup.prod.yml", "run" ]
     restart: "no"
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
       - ADMIN_SECRET=${ADMIN_SECRET:-changeme}
-      - KAFKA_URL=kafka0:9094
-      - KAFKA_ENABLED=true
-      - KAFKA_SECURITY_PROTOCOL=SASL_PLAINTEXT
-      - KAFKA_SASL_MECHANISM=PLAIN
-      - KAFKA_USERNAME=rarible
-      - KAFKA_PASSWORD=changeme
       - NETWORK=mainnet
       - LEGACY_API=https://tezos-api.rarible.org
       - UNION_API=https://api.rarible.org
@@ -26,7 +22,7 @@ services:
     image: postgres:12
     restart: always
     ports:
-      - "127.0.0.1:5432:5432"
+      - "5432:5432"
     environment:
       - POSTGRES_USER=dipdup
       - POSTGRES_DB=dipdup
@@ -53,62 +49,62 @@ services:
       - HASURA_GRAPHQL_UNAUTHORIZED_ROLE=user
       - HASURA_GRAPHQL_STRINGIFY_NUMERIC_TYPES=true
 
-  zookeeper0:
-    image: confluentinc/cp-zookeeper:7.0.1
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_SERVER_ID: 1
-      ZOOKEEPER_SERVERS: zookeeper0:2888:3888
-    volumes:
-      - zookeeper-data:/var/lib/zookeeper/data
-      - zookeeper-log:/var/lib/zookeeper/log
-    ports:
-      - "127.0.0.1:2181:2181"
-      - "127.0.0.1:2188:2188"
+  # zookeeper0:
+  #   image: confluentinc/cp-zookeeper:7.0.1
+  #   environment:
+  #     ZOOKEEPER_CLIENT_PORT: 2181
+  #     ZOOKEEPER_SERVER_ID: 1
+  #     ZOOKEEPER_SERVERS: zookeeper0:2888:3888
+  #   volumes:
+  #     - zookeeper-data:/var/lib/zookeeper/data
+  #     - zookeeper-log:/var/lib/zookeeper/log
+  #   ports:
+  #     - "127.0.0.1:2181:2181"
+  #     - "127.0.0.1:2188:2188"
 
-  kafka0:
-    depends_on:
-      - zookeeper0
-    image: confluentinc/cp-kafka:7.0.1
-    environment:
-      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:9094
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka0:9092,EXTERNAL://kafka0:9094
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
-      KAFKA_LISTENER_NAME_EXTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
-      KAFKA_LISTENER_NAME_EXTERNAL_PLAIN_SASL_JAAS_CONFIG: |
-        org.apache.kafka.common.security.plain.PlainLoginModule required \
-        username="rarible" \
-        password="changeme" \
-        user_rarible="changeme"; \
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper0:2181
-      KAFKA_ZOOKEEPER_SESSION_TIMEOUT: "6000"
-      ZOOKEEPER_SASL_ENABLED: "false"
-      KAFKA_BROKER_ID: 1
-      KAFKA_LOG4J_ROOT_LOGLEVEL: "DEBUG"
-      KAFKA_LOG4J_LOGGERS: "kafka.controller=DEBUG,kafka.producer.async.DefaultEventHandler=DEBUG,state.change.logger=DEBUG"
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
-      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
-    volumes:
-      - kafka-data:/var/lib/kafka/data
-    ports:
-      - "127.0.0.1:9092:9092"
-      - "127.0.0.1:9094:9094"
+  # kafka0:
+  #   depends_on:
+  #     - zookeeper0
+  #   image: confluentinc/cp-kafka:7.0.1
+  #   environment:
+  #     KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:9094
+  #     KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka0:9092,EXTERNAL://kafka0:9094
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+  #     KAFKA_LISTENER_NAME_EXTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
+  #     KAFKA_LISTENER_NAME_EXTERNAL_PLAIN_SASL_JAAS_CONFIG: |
+  #       org.apache.kafka.common.security.plain.PlainLoginModule required \
+  #       username="rarible" \
+  #       password="changeme" \
+  #       user_rarible="changeme"; \
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper0:2181
+  #     KAFKA_ZOOKEEPER_SESSION_TIMEOUT: "6000"
+  #     ZOOKEEPER_SASL_ENABLED: "false"
+  #     KAFKA_BROKER_ID: 1
+  #     KAFKA_LOG4J_ROOT_LOGLEVEL: "DEBUG"
+  #     KAFKA_LOG4J_LOGGERS: "kafka.controller=DEBUG,kafka.producer.async.DefaultEventHandler=DEBUG,state.change.logger=DEBUG"
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+  #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+  #     KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+  #     KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+  #   volumes:
+  #     - kafka-data:/var/lib/kafka/data
+  #   ports:
+  #     - "127.0.0.1:9092:9092"
+  #     - "127.0.0.1:9094:9094"
 
-  kafdrop:
-    depends_on:
-      - kafka0
-    image: obsidiandynamics/kafdrop
-    environment:
-      KAFKA_BROKERCONNECT: "kafka0:9092"
-      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
-    ports:
-      - "127.0.0.1:9000:9000"
+  # kafdrop:
+  #   depends_on:
+  #     - kafka0
+  #   image: obsidiandynamics/kafdrop
+  #   environment:
+  #     KAFKA_BROKERCONNECT: "kafka0:9092"
+  #     JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+  #   ports:
+  #     - "127.0.0.1:9000:9000"
 
-volumes:
-  zookeeper-data:
-  zookeeper-log:
-  kafka-data:
+# volumes:
+  # zookeeper-data:
+  # zookeeper-log:
+  # kafka-data:

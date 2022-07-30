@@ -200,7 +200,7 @@ async def signal_order_post_save(
 ) -> None:
     from rarible_marketplace_indexer.types.rarible_api_objects.order.factory import RaribleApiOrderFactory
 
-    await producer_send(RaribleApiOrderFactory.build(instance))
+    # await producer_send(RaribleApiOrderFactory.build(instance))
 
 
 @post_save(ActivityModel)
@@ -213,4 +213,4 @@ async def signal_activity_post_save(
 ) -> None:
     from rarible_marketplace_indexer.types.rarible_api_objects.activity.order.factory import RaribleApiOrderActivityFactory
 
-    await producer_send(RaribleApiOrderActivityFactory.build(instance))
+    # await producer_send(RaribleApiOrderActivityFactory.build(instance))

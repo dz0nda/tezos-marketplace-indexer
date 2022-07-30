@@ -47,26 +47,26 @@ indexes:
 #            pattern:
 #              - destination: rarible_exchange
 #                entrypoint: buy
-  rarible_exchange_legacy_actions:
-    kind: operation
-    datasource: tzkt
-    contracts:
-      - rarible_exchange_legacy
-    handlers:
-      - callback: rarible_match_orders_legacy
-        pattern:
-          - destination: rarible_exchange_legacy
-            entrypoint: match_orders
-  rarible_exchange_legacy_data_actions:
-    kind: operation
-    datasource: tzkt
-    contracts:
-      - rarible_exchange_legacy_data
-    handlers:
-      - callback: rarible_cancel_order_legacy
-        pattern:
-          - destination: rarible_exchange_legacy_data
-            entrypoint: remove
+  # rarible_exchange_legacy_actions:
+  #   kind: operation
+  #   datasource: tzkt
+  #   contracts:
+  #     - rarible_exchange_legacy
+  #   handlers:
+  #     - callback: rarible_match_orders_legacy
+  #       pattern:
+  #         - destination: rarible_exchange_legacy
+  #           entrypoint: match_orders
+  # rarible_exchange_legacy_data_actions:
+  #   kind: operation
+  #   datasource: tzkt
+  #   contracts:
+  #     - rarible_exchange_legacy_data
+  #   handlers:
+  #     - callback: rarible_cancel_order_legacy
+  #       pattern:
+  #         - destination: rarible_exchange_legacy_data
+  #           entrypoint: remove
 #  hen_actions:
 #    kind: operation
 #    datasource: tzkt_mainnet
@@ -150,17 +150,11 @@ indexes:
           - destination: fxhash_market_v1
             entrypoint: collect
 
-
-hooks:
-  process_collection_events:
-    callback: process_collection_events
-    atomic: False
-    args:
-      force_reindex: bool
-      head: int
-  import_legacy_orders:
-    callback: import_legacy_orders
-    atomic: False
+  # token_transfers:
+  #   kind: token_transfer
+  #   datasource: tzkt
+  #   handlers:
+  #     - callback: on_transfer
 
 advanced:
   reindex:
